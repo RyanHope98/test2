@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>iPhone Screen time</title> <!-- Title for the webpage --> 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script> <!--Used for displaying charts --> 
+  </head>
+  <body>
+    <h1>Screen time on iPhone</h1> <!--Title displayed on top of page --> 
+
+    <p><label for="screentime">How many minutes/hours are you on your phone for a day? ** (Hour.Minutes) e.g. 2.45 = 2 Hours, 45 Minutes **</label> <br> <!-- sub header --> 
+    <input type="text" id="screentime" min="0.0" max="8.0" value="0" oninput="sliderChange(this.value)"> <!--Text box displayed on page with min and max values allowed to input --> 
+    <output id="sliderVal"> </output> <br>  
+
+
+    
+    <button id="confirm">Confirm</button> <!--Button displayed on page --> 
+    </p>
+
+    <p>
+    <canvas id="chart" width="600" height="400"></canvas> <!--Size of webpage --> 
+
+  </p>
+
+    <script>
+      function sliderChange(val) {
+          document.getElementById('sliderVal').innerHTML = val; 
+      }
+
+      async function chartIt() {
+
+        let xVals = [];  // function to hold data on the x axis on chart 
+        let yVals = []; // function to hold data on the y axis on chart
+
+        const response = await fetch('/api');
+        const data = await response.json();
+        console.log(data); //const (constant) defines a variable that doesn't change 
+
+        for (let i = 0; i < data.length; i++){
+        xVals[i] = new Date(data[i].timestamp).toDateString(); //records the date (00/00/0000) on the x axis
+        yVals[i] = data[i].screentime;
+
+        const ctx = document.getElementById('chart').getContext('2d'); 
+        const myChart = new Chart(ctx, { //code used to build the chart on my webpage
+          type: 'bar', //type of chart used *bar chart*
+          data: {
+          labels: xVals,
+          datasets: [{ 
+            label: 'Hours of Screen time', //label giving the user some information on using this chart
+            data: yVals,
+            fill: false,
+            backgroundColor: 'rgba(230, 179, 255)',
+            borderColor: 'rgba(247, 230, 255)', //colour of bar charts 
+            borderWidth: 2}] //width of the borders
+        }
+        });
+
+      }
+    
+}
+       
+
+      const buttonSubmit = document.getElementById('confirm');
+      buttonSubmit.addEventListener('click', async event => { //action taken when pressing the button on page
+        const screentime = document.getElementById('screentime').value;
+
+        const data = {screentime};
+        const options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        };
+        const response = await fetch('/api', options);
+        const json = await response.json();
+        console.log(json);
+      
+      });
+
+
+chartIt();
+
+
+    </script>
+ 
+  <style>
+
+  body {
+    background-color: LightGray /* BACKGROUND COLOUR USED */
+  }
+  h1 { 
+  text-align: center;
+  text-shadow: 2px 2px;
+  display: block;
+  font-size: 3em;
+  margin-top: 0.99em;
+  margin-bottom: 0.10em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: lighter;
+  color: purple;   /* DISPLAY FOR THE HEADER TEXT */
+}
+
+p {
+  text-align: center;
+}
+
+button {
+  display: inline-block;
+  padding: 10px 15px;
+  font-size: 24px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  outline: none;
+  color: #fff;
+  background-color: purple;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 9px #999;
+}
+
+button.hover {background-color: #3e8e41}
+
+button.active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+/*DISPLAY FOR THE BUTTON ON PAGE*/
+
+ </body>
+</style>
+</html>
